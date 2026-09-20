@@ -13,13 +13,14 @@ import {
   map, 
   of 
 } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { User } from '../models/auth.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly API_URL = 'http://localhost:3000/auth';
+  private readonly API_URL = `${environment.apiUrl}/auth`;
 
   // Tokens stored strictly IN-MEMORY via Angular Signals
   readonly currentUser = signal<User | null>(null);

@@ -19,11 +19,13 @@ export interface UserManagementItem {
   createdAt: string;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class UsersService {
-  private readonly API_URL = 'http://localhost:3000/users';
+  private readonly API_URL = `${environment.apiUrl}/users`;
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
@@ -40,7 +42,7 @@ export class UsersService {
   }
 
   createUser(payload: any): Observable<any> {
-    return this.http.post('http://localhost:3000/auth/register', payload, { withCredentials: true });
+    return this.http.post(`${environment.apiUrl}/auth/register`, payload, { withCredentials: true });
   }
 
   getAuditLogs(): Observable<any[]> {

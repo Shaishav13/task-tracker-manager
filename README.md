@@ -89,7 +89,22 @@ Pre-seeded accounts available for local evaluation:
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### 🐳 Instant Docker Quickstart (Recommended)
+You can launch the entire ecosystem (PostgreSQL, NestJS backend, FastAPI analytics, and Angular frontend) with a single command:
+```bash
+docker compose up -d --build
+```
+- Web Application: **`http://localhost:4200`**
+- Core API & Swagger: **`http://localhost:3000/api/docs`**
+- Analytics Engine: **`http://localhost:8000/docs`**
+
+For comprehensive cloud hosting (Render, Railway, Vercel, VPS) details, see the **[Production Deployment Guide](DEPLOYMENT.md)**.
+
+---
+
+### Manual Local Development Setup
+
+#### Prerequisites
 - **Node.js**: v18+ (tested on v20/v22)
 - **Python**: v3.11+
 - **PostgreSQL**: Running locally on port `5432`

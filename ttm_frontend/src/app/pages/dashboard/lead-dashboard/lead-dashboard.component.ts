@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { AnalyticsService } from '../../../core/services/analytics.service';
 import { ExportService } from '../../../core/services/export.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-lead-dashboard',
@@ -160,7 +161,7 @@ export class LeadDashboardComponent implements OnInit {
       assigneeId: this.newTask.assigneeId || undefined
     };
 
-    this.http.post('http://localhost:3000/tasks', payload, { withCredentials: true }).subscribe({
+    this.http.post(`${environment.apiUrl}/tasks`, payload, { withCredentials: true }).subscribe({
       next: () => {
         this.isSubmittingTask.set(false);
         this.createTaskSuccess.set('Task created & assigned to team!');

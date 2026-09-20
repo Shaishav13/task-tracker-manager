@@ -1,0 +1,74 @@
+services:
+  # ─── PostgreSQL Database ──────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: ttm_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword123
+      POSTGRES_DB: task_manager_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - ttm_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d task_manager_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── NestJS Backend REST API ──────────────────────────────────────────────
+  backend:
+    build:
+      context: ./ttm_backend
+      dockerfile: Dockerfile
+    container_name: ttm_backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgrespassword123@postgres:5432/task_manager_db?schema=public
+      JWT_SECRET: super_secret_access_key_12345
+      JWT_REFRESH_SECRET: super_secret_refresh_key_67890
+      PORT: 3000
+      CLIENT_URL: http://localhost:4200,http://localhost:80,http://localhost
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ─── FastAPI Analytics Microservice ───────────────────────────────────────
+  analytics:
+    build:
+      context: ./ttm_analytics_service
+      dockerfile: Dockerfile
+    container_name: ttm_analytics
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      PORT: 8000
+      JWT_SECRET: super_secret_access_key_12345
+      JWT_ALGORITHM: HS256
+      CLIENT_URL: http://localhost:4200,http://localhost:80,http://localhost
+      DATABASE_URL: postgresql://postgres:postgrespassword123@postgres:5432/task_manager_db?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ─── Angular 19 Frontend SPA ──────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./ttm_frontend
+      dockerfile: Dockerfile
+    container_name: ttm_frontend
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+      - analytics
+
+volumes:
+  ttm_pgdata:
+    driver: local

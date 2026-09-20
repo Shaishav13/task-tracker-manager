@@ -16,6 +16,8 @@ export interface Task {
   createdAt: string;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Component({
   selector: 'app-tasks',
   standalone: true,
@@ -24,7 +26,7 @@ export interface Task {
   styleUrl: './tasks.component.css'
 })
 export class TasksComponent implements OnInit {
-  private readonly API_URL = 'http://localhost:3000/tasks';
+  private readonly API_URL = `${environment.apiUrl}/tasks`;
 
   tasks = signal<Task[]>([]);
   isModalOpen = signal<boolean>(false);

@@ -25,11 +25,13 @@ export interface Role {
   updatedAt: string;
 }
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class RolesService {
-  private readonly API_URL = 'http://localhost:3000/roles';
+  private readonly API_URL = `${environment.apiUrl}/roles`;
 
   readonly roles = signal<Role[]>([]);
   readonly permissions = signal<Permission[]>([]);

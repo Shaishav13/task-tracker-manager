@@ -8,6 +8,7 @@ import { UsersService, UserManagementItem } from '../../../core/services/users.s
 import { RolesService, Role } from '../../../core/services/roles.service';
 import { ExportService } from '../../../core/services/export.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-manager-dashboard',
@@ -201,7 +202,7 @@ export class ManagerDashboardComponent implements OnInit {
       assigneeId: this.newTask.assigneeId || undefined
     };
 
-    this.http.post('http://localhost:3000/tasks', payload, { withCredentials: true }).subscribe({
+    this.http.post(`${environment.apiUrl}/tasks`, payload, { withCredentials: true }).subscribe({
       next: () => {
         this.isSubmittingTask.set(false);
         this.createTaskSuccess.set('Task created & scoped to team successfully!');

@@ -3,11 +3,13 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { AuthService } from './auth.service';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
   providedIn: 'root'
 })
 export class AnalyticsService {
-  private readonly ANALYTICS_URL = 'http://localhost:8000/analytics/performance';
+  private readonly ANALYTICS_URL = `${environment.analyticsUrl}/analytics/performance`;
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 

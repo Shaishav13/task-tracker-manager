@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AnalyticsService } from '../../../core/services/analytics.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-member-dashboard',
@@ -70,14 +71,14 @@ export class MemberDashboardComponent implements OnInit {
   }
 
   fetchMyTasks(): void {
-    this.http.get<any[]>('http://localhost:3000/tasks', { withCredentials: true }).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/tasks`, { withCredentials: true }).subscribe({
       next: (tasks) => this.myTasks.set(tasks || []),
       error: (err) => console.error('Error fetching my tasks:', err)
     });
   }
 
   updateTaskStatus(task: any, newStatus: string): void {
-    this.http.patch(`http://localhost:3000/tasks/${task.id}`, { status: newStatus }, { withCredentials: true }).subscribe({
+    this.http.patch(`${environment.apiUrl}/tasks/${task.id}`, { status: newStatus }, { withCredentials: true }).subscribe({
       next: (updated: any) => {
         task.status = updated.status;
         this.fetchUserStats();
