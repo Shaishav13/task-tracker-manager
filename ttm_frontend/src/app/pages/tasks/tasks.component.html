@@ -1,0 +1,105 @@
+<div class="tasks-container animate-fade-in">
+  <div class="header glass-card">
+    <div class="header-title">
+      <h2>Task Management Board</h2>
+      <p>Organize, track, and execute team deliverables with RBAC governance</p>
+    </div>
+    <div class="actions">
+      <!-- Theme Switcher -->
+      <button 
+        class="theme-toggle-btn" 
+        (click)="themeService.toggleTheme()" 
+        [attr.aria-label]="'Switch to ' + (themeService.theme() === 'dark' ? 'light' : 'dark') + ' mode'"
+        [title]="'Switch to ' + (themeService.theme() === 'dark' ? 'light' : 'dark') + ' mode'"
+      >
+        <span *ngIf="themeService.theme() === 'dark'">☀️</span>
+        <span *ngIf="themeService.theme() === 'light'">🌙</span>
+      </button>
+
+      <button (click)="openCreateModal()" class="btn btn-primary">+ Create Task</button>
+      <button (click)="backToDashboard()" class="btn btn-secondary">← Back to Dashboard</button>
+    </div>
+  </div>
+
+  <div class="task-list">
+    @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <span>Loading workspace tasks...</span>
+      </div>
+    } @else if (tasks().length === 0) {
+      <div class="empty-state glass-card">
+        <div class="empty-icon">📋</div>
+        <h3>No Tasks Created Yet</h3>
+        <p>Get started by creating your first task in the tracker.</p>
+        <button (click)="openCreateModal()" class="btn btn-primary">Add Your First Task</button>
+      </div>
+    } @else {
+      <div class="tasks-grid">
+        @for (task of tasks(); track task.id) {
+          <div class="task-card glass-card">
+            <div class="task-card-header">
+              <h3>{{ task.title }}</h3>
+              <span class="badge priority {{ task.priority | lowercase }}">{{ task.priority }}</span>
+            </div>
+            <p class="task-desc">{{ task.description || 'No description provided.' }}</p>
+            <div class="task-card-footer">
+              <span class="badge status {{ task.status | lowercase }}">{{ task.status }}</span>
+              <span class="created-at" *ngIf="task.createdAt">{{ task.createdAt | date:'shortDate' }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Create Task Modal -->
+  @if (isModalOpen()) {
+    <div class="modal-backdrop" (click)="closeCreateModal()">
+      <div class="modal-content glass-card" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>Create New Task</h3>
+          <button class="btn-close" (click)="closeCreateModal()">✕</button>
+        </div>
+        <form (ngSubmit)="createTask()">
+          <div class="form-group">
+            <label for="title">Title</label>
+            <input id="title" [(ngModel)]="newTask.title" name="title" required placeholder="Task title..." />
+          </div>
+
+          <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" [(ngModel)]="newTask.description" name="description" rows="3" placeholder="Task description..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="priority">Priority</label>
+              <select id="priority" [(ngModel)]="newTask.priority" name="priority">
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="status">Status</label>
+              <select id="status" [(ngModel)]="newTask.status" name="status">
+                <option value="TODO">To Do</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="IN_REVIEW">In Review</option>
+                <option value="DONE">Done</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" (click)="closeCreateModal()" class="btn btn-secondary">Cancel</button>
+            <button type="submit" [disabled]="!newTask.title.trim()" class="btn btn-primary">Create Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

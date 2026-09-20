@@ -1,0 +1,534 @@
+<div class="manager-wrapper" [class.collapsed]="isSidebarCollapsed()">
+  <!-- Collapsible Sidebar -->
+  <aside class="sidebar-panel">
+    <div class="sidebar-header">
+      <div class="sidebar-header-text">
+        <span class="sidebar-badge">OPERATIONS</span>
+        <h3 class="sidebar-title">Manager Portal</h3>
+      </div>
+      <button class="btn-sidebar-toggle" (click)="toggleSidebar()" title="Toggle Sidebar">
+        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6" *ngIf="!isSidebarCollapsed()"></polyline>
+          <polyline points="9 18 15 12 9 6" *ngIf="isSidebarCollapsed()"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button 
+        class="nav-item" 
+        [class.active]="activeTab() === 'overview'" 
+        (click)="setTab('overview')"
+      >
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span>Department Overview</span>
+      </button>
+
+      <button 
+        class="nav-item" 
+        [class.active]="activeTab() === 'teams'" 
+        (click)="setTab('teams')"
+      >
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+          <circle cx="9" cy="7" r="4"></circle>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        </svg>
+        <span>My Managed Teams</span>
+      </button>
+
+      <button 
+        *ngIf="canManageUsers"
+        class="nav-item" 
+        [class.active]="activeTab() === 'users'" 
+        (click)="setTab('users')"
+      >
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
+        <span>User Access & Security</span>
+      </button>
+
+      <button 
+        class="nav-item" 
+        [class.active]="activeTab() === 'tasks'" 
+        (click)="setTab('tasks')"
+      >
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 11 12 14 22 4"></polyline>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+        <span>Team Tasks Feed</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="export-label">AUTOMATION & EXPORTS</div>
+      <div class="export-actions">
+        <button *ngIf="canSendReportDigest" class="btn-export" (click)="triggerAutomatedDigest()" title="Send Report Digest">
+          <svg class="export-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+          </svg>
+          <span class="export-text">Send Report Digest</span>
+        </button>
+        <button class="btn-export secondary" (click)="exportTeamDataCsv()" title="CSV Export">
+          <svg class="export-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span class="export-text">CSV Export</span>
+        </button>
+        <button class="btn-export secondary" (click)="exportTeamDataPdf()" title="PDF Report">
+          <svg class="export-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span class="export-text">PDF Report</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="dashboard-main">
+    <!-- Top Filter Bar -->
+    <div class="filter-topbar">
+      <div class="filter-heading">
+        <h2>Department Performance & Operations</h2>
+        <p>Real-time oversight of managed teams, lead execution, and scoped tasks.</p>
+      </div>
+      <form (submit)="applyFilters()" class="date-filter-form">
+        <div class="filter-field">
+          <label>From</label>
+          <input type="date" [(ngModel)]="dateFrom" name="dateFrom" class="form-input">
+        </div>
+        <div class="filter-field">
+          <label>To</label>
+          <input type="date" [(ngModel)]="dateTo" name="dateTo" class="form-input">
+        </div>
+        <button type="submit" class="btn btn-secondary">Filter Data</button>
+      </form>
+    </div>
+
+    <!-- Alert / Digest Notification -->
+    <div *ngIf="digestStatus()" class="alert alert-info animate-fade-in">
+      {{ digestStatus() }}
+    </div>
+
+    <div *ngIf="loading()" class="loading">Loading department data...</div>
+    <div *ngIf="error()" class="alert alert-danger">{{ error() }}</div>
+
+    <div *ngIf="!loading() && !error()">
+      <!-- TAB 1: OVERVIEW -->
+      <div *ngIf="activeTab() === 'overview'" class="tab-pane animate-fade-in">
+        <div class="overview-grid">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">TOTAL TEAM TASKS</span>
+              <span class="kpi-badge primary">Teams</span>
+            </div>
+            <div class="kpi-value">{{ totalTeamTasks }}</div>
+            <div class="kpi-subtitle">Across {{ teams().length }} Managed Teams</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">COMPLETED DELIVERABLES</span>
+              <span class="kpi-badge success">Done</span>
+            </div>
+            <div class="kpi-value success">{{ completedTeamTasks }}</div>
+            <div class="kpi-subtitle">Department Completion Rate: {{ overallCompletionRate }}%</div>
+            <div class="kpi-progress">
+              <div class="progress-fill" [style.width.%]="overallCompletionRate"></div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">MANAGED TEAMS</span>
+              <span class="kpi-badge">Active</span>
+            </div>
+            <div class="kpi-value">{{ teams().length }}</div>
+            <div class="kpi-subtitle">Operational Units</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">OVERDUE TASKS</span>
+              <span class="kpi-badge danger">Attention</span>
+            </div>
+            <div class="kpi-value danger">{{ overdueTeamTasks }}</div>
+            <div class="kpi-subtitle">Requires Lead Escalation</div>
+          </div>
+        </div>
+
+        <div class="split-row" style="margin-top: 16px;">
+          <!-- Managed Teams Quick Summary -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div>
+                <h3>Team Execution Breakdown</h3>
+                <p class="panel-sub">Performance metrics by operational unit</p>
+              </div>
+            </div>
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Team Name</th>
+                  <th>Team Lead</th>
+                  <th>Total</th>
+                  <th>Completed</th>
+                  <th>Completion Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let team of teams()">
+                  <td class="font-medium">{{ team.team_name }}</td>
+                  <td class="text-secondary">{{ team.lead_name || 'Unassigned' }}</td>
+                  <td>{{ team.total_tasks }}</td>
+                  <td class="success-text">{{ team.completed }}</td>
+                  <td>
+                    <div class="progress-bar-container">
+                      <div class="progress-bar" [style.width.%]="team.completion_rate_pct"></div>
+                      <span>{{ team.completion_rate_pct }}%</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Department Quick Actions & Feed -->
+          <div class="panel-card">
+            <div class="panel-header">
+              <div>
+                <h3>Quick Management Actions</h3>
+                <p class="panel-sub">Create tasks and add team members</p>
+              </div>
+            </div>
+            <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+              <button *ngIf="canCreateTasks" class="btn btn-primary" (click)="openCreateTaskModal()">
+                + Create Task for Team
+              </button>
+              <button *ngIf="canCreateUsers" class="btn btn-secondary" (click)="openCreateUserModal()">
+                + Add Team Member / Lead
+              </button>
+            </div>
+            <div class="performers-list">
+              <div class="performer-item" *ngFor="let task of teamTasks().slice(0, 5)">
+                <div class="performer-label">{{ task.team_name || 'General' }} &bull; {{ task.priority }}</div>
+                <div class="performer-name">{{ task.title }}</div>
+                <div class="text-secondary" style="font-size: 11px; margin-top: 2px;">
+                  Assigned to: {{ task.assignee_name }} &bull; Status: {{ task.status }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: MY MANAGED TEAMS -->
+      <div *ngIf="activeTab() === 'teams'" class="tab-pane animate-fade-in">
+        <div class="teams-grid">
+          <div class="team-card" *ngFor="let team of teams()">
+            <div class="team-header">
+              <h3>{{ team.team_name }}</h3>
+              <span class="lead-badge">Lead: {{ team.lead_name || 'Unassigned' }}</span>
+            </div>
+
+            <div class="team-stats">
+              <div class="stat">
+                <span class="label">Total Tasks</span>
+                <span class="value">{{ team.total_tasks }}</span>
+              </div>
+              <div class="stat">
+                <span class="label">Completed</span>
+                <span class="value success">{{ team.completed }}</span>
+              </div>
+              <div class="stat">
+                <span class="label">Completion Rate</span>
+                <span class="value primary">{{ team.completion_rate_pct }}%</span>
+              </div>
+              <div class="stat">
+                <span class="label">Avg Hrs/Task</span>
+                <span class="value">{{ team.avg_completion_hrs }}</span>
+              </div>
+              <div class="stat">
+                <span class="label">Overdue</span>
+                <span class="value danger">{{ team.overdue }}</span>
+              </div>
+            </div>
+
+            <div class="member-rankings" *ngIf="team.member_rankings?.length">
+              <h4>Member Rankings within {{ team.team_name }}</h4>
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Member Name</th>
+                    <th>Assigned</th>
+                    <th>Completed</th>
+                    <th>Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let member of team.member_rankings">
+                    <td>{{ member.user_name }}</td>
+                    <td>{{ member.total_tasks }}</td>
+                    <td>{{ member.completed }}</td>
+                    <td>
+                      <div class="progress-bar-container">
+                        <div class="progress-bar" [style.width.%]="member.completion_rate_pct"></div>
+                        <span>{{ member.completion_rate_pct }}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div *ngIf="teams().length === 0" class="no-data">
+            <p>No managed team performance data available.</p>
+          </div>
+        </div>
+
+        <div class="pagination-controls" *ngIf="totalPages() > 1" style="margin-top: 16px;">
+          <button class="btn btn-outline" [disabled]="page() === 1" (click)="prevPage()">Previous</button>
+          <span class="page-info">Page {{ page() }} of {{ totalPages() }}</span>
+          <button class="btn btn-outline" [disabled]="page() === totalPages()" (click)="nextPage()">Next</button>
+        </div>
+      </div>
+
+      <!-- TAB 3: USER ACCESS & SECURITY -->
+      <div *ngIf="activeTab() === 'users'" class="tab-pane animate-fade-in">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h3>Department User Management</h3>
+              <p class="panel-sub">Create team leads & members and control active login status.</p>
+            </div>
+            <div class="header-right-actions">
+              <button class="btn btn-primary" (click)="openCreateUserModal()">
+                + Create New User
+              </button>
+              <input 
+                type="text" 
+                placeholder="Search user..." 
+                [ngModel]="userSearchQuery()" 
+                (ngModelChange)="userSearchQuery.set($event)"
+                class="search-input"
+              >
+            </div>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User Name</th>
+                <th>Email</th>
+                <th>System Role</th>
+                <th>Status</th>
+                <th>Login Restriction Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of filteredUsers">
+                <td class="font-medium">{{ u.name }}</td>
+                <td class="text-secondary">{{ u.email }}</td>
+                <td>
+                  <span [class]="getRoleRankInfo(u.role.name).cssClass">
+                    {{ getRoleRankInfo(u.role.name).label }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-indicator" [class.active]="u.isActive" [class.disabled]="!u.isActive">
+                    {{ u.isActive ? 'Active' : 'Disabled' }}
+                  </span>
+                </td>
+                <td>
+                  <button 
+                    *ngIf="canManageUser(u)"
+                    class="btn-toggle-status" 
+                    [class.btn-disable]="u.isActive"
+                    [class.btn-enable]="!u.isActive"
+                    (click)="toggleUserStatus(u)"
+                  >
+                    {{ u.isActive ? 'Disable Login' : 'Activate Login' }}
+                  </button>
+                  <span *ngIf="!canManageUser(u)" class="read-only-badge">
+                    Protected Tier
+                  </span>
+                </td>
+              </tr>
+              <tr *ngIf="filteredUsers.length === 0">
+                <td colspan="5" class="empty-table-cell">No users found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: TEAM TASKS FEED -->
+      <div *ngIf="activeTab() === 'tasks'" class="tab-pane animate-fade-in">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h3>Team Tasks Feed</h3>
+              <p class="panel-sub">Tasks created specifically for your managed teams.</p>
+            </div>
+            <button class="btn btn-primary" (click)="openCreateTaskModal()">
+              + Create Task for Team
+            </button>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Task Title</th>
+                <th>Scoped Team</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assignee</th>
+                <th>Creator</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of teamTasks()">
+                <td class="font-medium">{{ task.title }}</td>
+                <td>
+                  <span class="role-badge">{{ task.team_name || 'General Pool' }}</span>
+                </td>
+                <td>
+                  <span class="priority-tag" [class]="task.priority.toLowerCase()">{{ task.priority }}</span>
+                </td>
+                <td>
+                  <span class="status-tag" [class]="task.status.toLowerCase()">{{ task.status }}</span>
+                </td>
+                <td class="text-secondary">{{ task.assignee_name || 'Unassigned' }}</td>
+                <td class="text-secondary">{{ task.creator_name || 'System' }}</td>
+              </tr>
+              <tr *ngIf="teamTasks().length === 0">
+                <td colspan="6" class="empty-table-cell">No tasks recorded for your managed teams.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal: Create Task for Team -->
+<div *ngIf="showCreateTaskModal()" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Create Task for Team</h3>
+      <button class="btn-close" (click)="closeCreateTaskModal()">&times;</button>
+    </div>
+
+    <form (submit)="submitCreateTask()" class="modal-form">
+      <div *ngIf="createTaskError()" class="alert alert-danger">
+        {{ createTaskError() }}
+      </div>
+      <div *ngIf="createTaskSuccess()" class="alert alert-success">
+        {{ createTaskSuccess() }}
+      </div>
+
+      <div class="form-group">
+        <label>Task Title *</label>
+        <input type="text" [(ngModel)]="newTask.title" name="title" class="form-input" placeholder="e.g. Implement API Endpoint" required>
+      </div>
+
+      <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="newTask.description" name="description" class="form-input" rows="2" placeholder="Task summary..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Select Team *</label>
+        <select [(ngModel)]="newTask.teamId" name="teamId" class="form-input" required>
+          <option value="" disabled>Select Managed Team</option>
+          <option *ngFor="let t of teams()" [value]="t.team_id">{{ t.team_name }}</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Priority</label>
+        <select [(ngModel)]="newTask.priority" name="priority" class="form-input">
+          <option value="LOW">LOW</option>
+          <option value="MEDIUM">MEDIUM</option>
+          <option value="HIGH">HIGH</option>
+          <option value="URGENT">URGENT</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Due Date</label>
+        <input type="date" [(ngModel)]="newTask.dueDate" name="dueDate" class="form-input">
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeCreateTaskModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmittingTask()">
+          {{ isSubmittingTask() ? 'Creating Task...' : 'Create & Assign Task' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Create User -->
+<div *ngIf="showCreateUserModal()" class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>Create Team Member / Lead</h3>
+      <button class="btn-close" (click)="closeCreateUserModal()">&times;</button>
+    </div>
+
+    <form (submit)="submitCreateUser()" class="modal-form">
+      <div *ngIf="createUserError()" class="alert alert-danger">
+        {{ createUserError() }}
+      </div>
+      <div *ngIf="createUserSuccess()" class="alert alert-success">
+        {{ createUserSuccess() }}
+      </div>
+
+      <div class="form-group">
+        <label>Full Name *</label>
+        <input type="text" [(ngModel)]="newUser.name" name="name" class="form-input" placeholder="e.g. Sarah Jenkins" required>
+      </div>
+
+      <div class="form-group">
+        <label>Email Address *</label>
+        <input type="email" [(ngModel)]="newUser.email" name="email" class="form-input" placeholder="sarah@company.local" required>
+      </div>
+
+      <div class="form-group">
+        <label>Initial Password *</label>
+        <input type="password" [(ngModel)]="newUser.password" name="password" class="form-input" required>
+      </div>
+
+      <div class="form-group">
+        <label>System Role *</label>
+        <select [(ngModel)]="newUser.roleId" name="roleId" class="form-input" required>
+          <option value="" disabled>Select System Role</option>
+          <option *ngFor="let role of availableAssignableRoles" [value]="role.id">{{ role.name }}</option>
+        </select>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" (click)="closeCreateUserModal()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmittingUser()">
+          {{ isSubmittingUser() ? 'Creating User...' : 'Create User' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

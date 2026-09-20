@@ -1,0 +1,69 @@
+<div class="login-wrapper animate-fade-in">
+  <div class="theme-toggle-corner">
+    <button 
+      class="theme-toggle-btn" 
+      (click)="themeService.toggleTheme()" 
+      [attr.aria-label]="'Switch to ' + (themeService.theme() === 'dark' ? 'light' : 'dark') + ' mode'"
+      [title]="'Switch to ' + (themeService.theme() === 'dark' ? 'light' : 'dark') + ' mode'"
+    >
+      <span *ngIf="themeService.theme() === 'dark'">☀️</span>
+      <span *ngIf="themeService.theme() === 'light'">🌙</span>
+    </button>
+  </div>
+
+  <div class="login-card glass-card">
+    <div class="login-header">
+      <div class="brand-badge">TTM</div>
+      <h2>Welcome Back</h2>
+      <p class="login-subtitle">Sign in to your Task Tracker Manager workspace</p>
+    </div>
+    
+    <form (ngSubmit)="onSubmit()" class="login-form">
+      @if (errorMessage()) {
+        <div class="alert-error" role="alert">
+          <span class="error-icon">⚠️</span>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <div class="input-icon-wrapper">
+          <input 
+            id="email" 
+            type="email" 
+            [ngModel]="email()" 
+            (ngModelChange)="email.set($event)"
+            name="email" 
+            placeholder="e.g. superadmin@company.local"
+            required 
+          />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="input-icon-wrapper">
+          <input 
+            id="password" 
+            type="password" 
+            [ngModel]="password()" 
+            (ngModelChange)="password.set($event)"
+            name="password" 
+            placeholder="••••••••••••"
+            required 
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-block">
+        <span>Sign In to Dashboard</span>
+        <span class="arrow-icon">→</span>
+      </button>
+    </form>
+
+    <div class="login-footer">
+      <span>Protected by enterprise RBAC governance & rate limiting</span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,215 @@
+<div class="member-wrapper" [class.collapsed]="isSidebarCollapsed()">
+  <!-- Collapsible Sidebar -->
+  <aside class="sidebar-panel">
+    <div class="sidebar-header">
+      <div class="sidebar-header-text">
+        <span class="sidebar-badge">CONTRIBUTOR</span>
+        <h3 class="sidebar-title">Member Portal</h3>
+      </div>
+      <button class="btn-sidebar-toggle" (click)="toggleSidebar()" title="Toggle Sidebar">
+        <svg class="toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6" *ngIf="!isSidebarCollapsed()"></polyline>
+          <polyline points="9 18 15 12 9 6" *ngIf="isSidebarCollapsed()"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button 
+        class="nav-item" 
+        [class.active]="activeTab() === 'overview'" 
+        (click)="setTab('overview')"
+      >
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect>
+          <rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect>
+          <rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span>My Work Overview</span>
+      </button>
+
+      <button 
+        class="nav-item" 
+        [class.active]="activeTab() === 'tasks'" 
+        (click)="setTab('tasks')"
+      >
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 11 12 14 22 4"></polyline>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+        <span>My Assigned Tasks</span>
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="dashboard-main">
+    <!-- Top Filter Bar -->
+    <div class="filter-topbar">
+      <div class="filter-heading">
+        <h2>Personal Deliverables & Metrics</h2>
+        <p>Track assigned tasks, update progress, and view personal metrics.</p>
+      </div>
+      <form (submit)="applyFilters()" class="date-filter-form">
+        <div class="filter-field">
+          <label>From</label>
+          <input type="date" [(ngModel)]="dateFrom" name="dateFrom" class="form-input">
+        </div>
+        <div class="filter-field">
+          <label>To</label>
+          <input type="date" [(ngModel)]="dateTo" name="dateTo" class="form-input">
+        </div>
+        <button type="submit" class="btn btn-secondary">Filter Data</button>
+      </form>
+    </div>
+
+    <div *ngIf="loading()" class="loading">Loading personal metrics...</div>
+    <div *ngIf="error()" class="alert alert-danger">{{ error() }}</div>
+
+    <div *ngIf="!loading() && !error()">
+      <!-- TAB 1: OVERVIEW -->
+      <div *ngIf="activeTab() === 'overview'" class="tab-pane animate-fade-in">
+        <div class="overview-grid" *ngIf="userStats(); else noStats">
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">TOTAL ASSIGNED</span>
+              <span class="kpi-badge primary">Tasks</span>
+            </div>
+            <div class="kpi-value">{{ userStats().total_tasks }}</div>
+            <div class="kpi-subtitle">Personal Workload</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">COMPLETED DELIVERABLES</span>
+              <span class="kpi-badge success">Done</span>
+            </div>
+            <div class="kpi-value success">{{ userStats().completed }}</div>
+            <div class="kpi-subtitle">Completion Rate: {{ userStats().completion_rate_pct }}%</div>
+            <div class="kpi-progress">
+              <div class="progress-fill" [style.width.%]="userStats().completion_rate_pct"></div>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">IN PROGRESS</span>
+              <span class="kpi-badge">Active</span>
+            </div>
+            <div class="kpi-value">{{ userStats().in_progress }}</div>
+            <div class="kpi-subtitle">Current Sprint Tasks</div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-header">
+              <span class="kpi-title">OVERDUE</span>
+              <span class="kpi-badge danger">Warning</span>
+            </div>
+            <div class="kpi-value danger">{{ userStats().overdue }}</div>
+            <div class="kpi-subtitle">Past Due Date</div>
+          </div>
+        </div>
+
+        <ng-template #noStats>
+          <div class="no-data">
+            <p>No personal task history available for this date range.</p>
+          </div>
+        </ng-template>
+
+        <div class="panel-card" style="margin-top: 16px;">
+          <div class="panel-header">
+            <div>
+              <h3>Recent Deliverables & Tasks</h3>
+              <p class="panel-sub">Tasks assigned directly to you</p>
+            </div>
+            <button class="btn btn-secondary" (click)="setTab('tasks')">
+              View All My Tasks
+            </button>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Task Title</th>
+                <th>Team Scope</th>
+                <th>Priority</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of myTasks().slice(0, 5)">
+                <td class="font-medium">{{ task.title }}</td>
+                <td>
+                  <span class="role-badge">{{ task.team?.name || 'General Pool' }}</span>
+                </td>
+                <td>
+                  <span class="priority-tag" [class]="task.priority.toLowerCase()">{{ task.priority }}</span>
+                </td>
+                <td>
+                  <span class="status-tag" [class]="task.status.toLowerCase()">{{ task.status }}</span>
+                </td>
+              </tr>
+              <tr *ngIf="myTasks().length === 0">
+                <td colspan="4" class="empty-table-cell">No tasks currently assigned to you.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 2: MY ASSIGNED TASKS -->
+      <div *ngIf="activeTab() === 'tasks'" class="tab-pane animate-fade-in">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h3>My Assigned Tasks Board</h3>
+              <p class="panel-sub">Update task status as you make progress.</p>
+            </div>
+          </div>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Task Title</th>
+                <th>Team Scope</th>
+                <th>Priority</th>
+                <th>Current Status</th>
+                <th>Update Progress</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let task of myTasks()">
+                <td class="font-medium">{{ task.title }}</td>
+                <td>
+                  <span class="role-badge">{{ task.team?.name || 'General Pool' }}</span>
+                </td>
+                <td>
+                  <span class="priority-tag" [class]="task.priority.toLowerCase()">{{ task.priority }}</span>
+                </td>
+                <td>
+                  <span class="status-tag" [class]="task.status.toLowerCase()">{{ task.status }}</span>
+                </td>
+                <td>
+                  <select 
+                    [ngModel]="task.status" 
+                    (ngModelChange)="updateTaskStatus(task, $event)"
+                    class="status-select"
+                  >
+                    <option value="TODO">TODO</option>
+                    <option value="IN_PROGRESS">IN_PROGRESS</option>
+                    <option value="IN_REVIEW">IN_REVIEW</option>
+                    <option value="DONE">DONE</option>
+                  </select>
+                </td>
+              </tr>
+              <tr *ngIf="myTasks().length === 0">
+                <td colspan="5" class="empty-table-cell">No tasks assigned to you.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

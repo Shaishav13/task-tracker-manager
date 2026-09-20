@@ -1,0 +1,98 @@
+<div class="roles-container animate-fade-in">
+  <div class="header-section glass-card">
+    <div class="header-content">
+      <h2>Roles & Permissions Governance</h2>
+      <p>Configure hierarchical permissions and access control matrices for enterprise roles.</p>
+    </div>
+    <div class="header-actions">
+      <!-- Theme Switcher -->
+      <button 
+        class="theme-toggle-btn" 
+        (click)="themeService.toggleTheme()" 
+        [attr.aria-label]="'Switch to ' + (themeService.theme() === 'dark' ? 'light' : 'dark') + ' mode'"
+        [title]="'Switch to ' + (themeService.theme() === 'dark' ? 'light' : 'dark') + ' mode'"
+      >
+        <svg *ngIf="themeService.theme() === 'dark'" class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        <svg *ngIf="themeService.theme() === 'light'" class="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      </button>
+
+      <button class="btn btn-secondary" (click)="router.navigate(['/dashboard'])">
+        ← Back to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <div class="matrix-layout">
+    <!-- Left Sidebar: Roles List -->
+    <div class="roles-list-panel glass-card">
+      <div class="panel-header">
+        <h3>System Roles</h3>
+      </div>
+      
+      <div class="roles-list">
+        <div 
+          *ngFor="let role of roles()" 
+          class="role-card" 
+          [class.active]="selectedRole()?.id === role.id"
+          (click)="selectRole(role)"
+        >
+          <div class="role-info">
+            <h4 class="role-name">{{ role.name }}</h4>
+            <span *ngIf="role.isSystem" class="badge system-badge">System</span>
+          </div>
+          <p class="role-desc">{{ role.description || 'No description provided' }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Panel: Permissions Matrix -->
+    <div class="permissions-panel glass-card">
+      <div class="panel-header" *ngIf="selectedRole() as role">
+        <div class="title-with-actions">
+          <h3>Permissions Matrix: {{ role.name }}</h3>
+          <button 
+            class="btn btn-primary" 
+            (click)="savePermissions()" 
+            [disabled]="isSaving()"
+          >
+            {{ isSaving() ? 'Saving...' : 'Save Permission Matrix' }}
+          </button>
+        </div>
+      </div>
+      
+      <div class="no-selection" *ngIf="!selectedRole()">
+        <h3>No Role Selected</h3>
+        <p>Select a role from the left panel to configure its permissions.</p>
+      </div>
+
+      <div class="permissions-content" *ngIf="selectedRole()">
+        
+        <div *ngIf="errorMessage()" class="alert alert-danger">{{ errorMessage() }}</div>
+        <div *ngIf="successMessage()" class="alert alert-success">{{ successMessage() }}</div>
+
+        <div class="module-group" *ngFor="let group of permissionsByModule() | keyvalue">
+          <h4 class="module-title">{{ group.key }} Module</h4>
+          
+          <div class="permissions-grid">
+            <label 
+              class="permission-toggle" 
+              *ngFor="let perm of group.value"
+              [class.checked]="hasPermission(perm.id)"
+            >
+              <input 
+                type="checkbox" 
+                [checked]="hasPermission(perm.id)"
+                (change)="togglePermission(perm.id)"
+              >
+              <span class="custom-checkbox"></span>
+              <span class="action-name">{{ perm.action }}</span>
+            </label>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+

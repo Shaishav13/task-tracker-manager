@@ -1,0 +1,150 @@
+datasource db {
+  provider = "postgresql"
+ }
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           String         @id @default(uuid())
+  name         String
+  email        String         @unique
+  passwordHash String
+  isActive              Boolean        @default(true)
+  failedLoginAttempts   Int            @default(0)
+  lockedUntil           DateTime?
+  roleId       String
+  role         Role           @relation(fields: [roleId], references: [id])
+  managerId    String?
+  manager      User?          @relation("ManagerSubordinates", fields: [managerId], references: [id])
+  subordinates User[]         @relation("ManagerSubordinates")
+  createdTasks Task[]         @relation("TaskCreator")
+  assignedTasks Task[]        @relation("TaskAssignee")
+  teamMembers  TeamMember[]
+  managedTeams Team[]         @relation("TeamManager")
+  ledTeams     Team[]         @relation("TeamLead")
+  refreshTokens RefreshToken[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String   @id @default(uuid())
+  hashedToken String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  revoked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
+model Role {
+  id              String           @id @default(uuid())
+  name            String           @unique
+  description     String?
+  isSystem        Boolean          @default(false)
+  users           User[]
+  rolePermissions RolePermission[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@map("roles")
+}
+
+model Permission {
+  id              String           @id @default(uuid())
+  module          String
+  action          String
+  rolePermissions RolePermission[]
+  createdAt       DateTime         @default(now())
+
+  @@unique([module, action])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+model Team {
+  id          String       @id @default(uuid())
+  name        String
+  managerId   String
+  manager     User         @relation("TeamManager", fields: [managerId], references: [id])
+  teamLeadId  String
+  teamLead    User         @relation("TeamLead", fields: [teamLeadId], references: [id])
+  members     TeamMember[]
+  tasks       Task[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("teams")
+}
+
+model TeamMember {
+  teamId   String
+  team     Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([teamId, userId])
+  @@map("team_members")
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Task {
+  id           String       @id @default(uuid())
+  title        String
+  description  String?
+  status       TaskStatus   @default(TODO)
+  priority     TaskPriority @default(MEDIUM)
+  assignedToId String?
+  assignedTo   User?        @relation("TaskAssignee", fields: [assignedToId], references: [id])
+  createdById  String
+  createdBy    User         @relation("TaskCreator", fields: [createdById], references: [id])
+  teamId       String?
+  team         Team?        @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  dueDate      DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  @@map("tasks")
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String
+  actorEmail String
+  action     String   // e.g. "USER_DEACTIVATED", "PASSWORD_RESET", "ROLE_PERMISSION_CHANGED"
+  targetId   String?  // the entity being acted on (user ID, role ID, etc.)
+  targetType String?  // "USER", "ROLE"
+  detail     String?  // JSON or human-readable description of what changed
+  createdAt  DateTime @default(now())
+
+  @@map("audit_logs")
+}
