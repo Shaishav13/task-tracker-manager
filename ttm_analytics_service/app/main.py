@@ -1,7 +1,8 @@
 import os
 from datetime import date, datetime
 from typing import Optional
-from fastapi import FastAPI, Depends, HTTPException, Query, status
+from fastapi import FastAPI, Depends, HTTPException, Query, status, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import pandas as pd
 import numpy as np
@@ -29,6 +30,21 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    origin = request.headers.get("origin", "")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal Server Error", "error": str(exc)},
+        headers={
+            "Access-Control-Allow-Origin": origin if origin else "*",
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Methods": "*",
+            "Access-Control-Allow-Headers": "*",
+        },
+    )
 
 
 # ─── Helpers ────────────────────────────────────────────────────────────────────
@@ -73,7 +89,8 @@ def _load_tasks_df() -> pd.DataFrame:
         LEFT JOIN users mgr      ON tm."managerId"   = mgr.id
         LEFT JOIN users lead     ON tm."teamLeadId"  = lead.id
     """
-    df = pd.read_sql(query, engine)
+    with engine.connect() as conn:
+        df = pd.read_sql(text(query), conn)
 
     # Normalise dates
     for col in ("createdAt", "completedAt", "dueDate"):
