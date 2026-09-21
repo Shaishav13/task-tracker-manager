@@ -235,6 +235,38 @@ h1, h2, h3, h4, h5, h6 {
   transform: rotate(15deg);
 }
 
+.theme-icon {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  stroke-width: 2;
+  flex-shrink: 0;
+}
+
+.btn svg,
+.btn-svg-icon {
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  stroke-width: 2;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.error-icon {
+  width: 1.25rem !important;
+  height: 1.25rem !important;
+  flex-shrink: 0;
+  stroke-width: 2;
+}
+
+.arrow-icon {
+  width: 1.125rem !important;
+  height: 1.125rem !important;
+  stroke-width: 2;
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* Glass Cards & Containers */
 .glass-card {
   background: var(--bg-surface-glass);
