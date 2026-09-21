@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: (typeof window !== 'undefined' && (window as any)?.__env?.apiUrl) || 'http://localhost:3000',
-  analyticsUrl: (typeof window !== 'undefined' && (window as any)?.__env?.analyticsUrl) || 'http://localhost:8000',
+  apiUrl: 'https://ttm-backend-044j.onrender.com',
+  analyticsUrl: 'https://ttm-analytics.onrender.com',
 };
