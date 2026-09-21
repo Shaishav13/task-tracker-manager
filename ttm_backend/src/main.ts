@@ -12,7 +12,25 @@ async function bootstrap() {
   app.use(cookieParser());
 
   app.enableCors({
-    origin: process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',') : ['http://localhost:4200', 'http://localhost:3001', 'http://localhost:3000'],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl)
+      if (!origin) return callback(null, true);
+
+      const clientEnv = process.env.CLIENT_URL || '';
+      const allowed = clientEnv.split(',').map((u) => u.trim());
+
+      if (
+        allowed.includes('*') ||
+        allowed.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.onrender.com') ||
+        origin.includes('localhost')
+      ) {
+        return callback(null, true);
+      }
+
+      return callback(null, true);
+    },
     credentials: true,
   });
 

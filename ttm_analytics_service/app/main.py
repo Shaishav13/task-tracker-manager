@@ -19,11 +19,12 @@ app = FastAPI(
 )
 
 # Configure CORS to mirror NestJS settings
-client_url = os.getenv("CLIENT_URL", "http://localhost:4200")
-allowed_origins = list(set([client_url, "http://localhost:4200", "http://localhost:3001", "http://localhost:3000"]))
+client_url = os.getenv("CLIENT_URL", "")
+configured_origins = [u.strip() for u in client_url.split(",") if u.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=configured_origins or ["*"],
+    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.onrender\.com|http://localhost(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
