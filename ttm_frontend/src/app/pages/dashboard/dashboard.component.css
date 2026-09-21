@@ -29,16 +29,17 @@
 .brand-logo {
   width: 2.5rem;
   height: 2.5rem;
-  background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
+  background-color: var(--primary-600);
   color: #ffffff;
   font-family: 'Outfit', sans-serif;
   font-weight: 800;
   font-size: 1.125rem;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px var(--primary-glow);
+  box-shadow: 0 2px 6px var(--primary-glow);
   letter-spacing: -0.05em;
 }
 

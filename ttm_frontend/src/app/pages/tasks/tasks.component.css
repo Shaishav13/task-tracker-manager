@@ -95,7 +95,29 @@
 }
 
 .empty-icon {
-  font-size: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background-color: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.empty-svg {
+  width: 2rem;
+  height: 2rem;
+}
+
+.btn-svg-icon {
+  width: 1rem;
+  height: 1rem;
+}
+
+.close-svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 /* Priority & Status Badges */
