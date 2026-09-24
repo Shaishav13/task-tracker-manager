@@ -71,7 +71,7 @@ export class AuthService {
         }),
         catchError((err) => {
           this.isRefreshing = false;
-          this.clearSession();
+          this.clearSession(false);
           return throwError(() => err);
         })
       );
@@ -112,9 +112,11 @@ export class AuthService {
     );
   }
 
-  private clearSession(): void {
+  private clearSession(navigate: boolean = true): void {
     this.accessToken.set(null);
     this.currentUser.set(null);
-    this.router.navigate(['/login']);
+    if (navigate) {
+      this.router.navigate(['/login']);
+    }
   }
 }
