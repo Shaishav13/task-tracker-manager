@@ -37,6 +37,17 @@ The system is organized into three microservices:
 
 ---
 
+## ✨ Core Features
+
+- **🏢 Enterprise-Grade Architecture**: Distributed microservices combining NestJS, FastAPI, and Angular.
+- **🛡️ Advanced 5-Tier RBAC**: Strict hierarchical role-based access control (Super Admin down to Team Member).
+- **📊 Real-Time Analytics Engine**: Python FastAPI and Pandas powered data processing for deep team metrics.
+- **🔒 Secure Authentication**: JWT implementation with secure, HttpOnly cookie-based refresh token rotation.
+- **📋 Comprehensive Task Management**: Granular task tracking, status boards, and team assignments.
+- **🐳 Seamless Docker Integration**: Single-command deployment using a unified Docker Compose configuration.
+
+---
+
 ## 🛡 5-Tier Role-Based Access Control (RBAC)
 
 TTM enforces strict organizational hierarchy rules across all services:
@@ -90,13 +101,25 @@ Pre-seeded accounts available for local evaluation:
 ## 🚀 Getting Started
 
 ### 🐳 Instant Docker Quickstart (Recommended)
-You can launch the entire ecosystem (PostgreSQL, NestJS backend, FastAPI analytics, and Angular frontend) with a single command:
+This project includes a comprehensive `docker-compose.yml` in the root directory that spins up the entire stack (PostgreSQL, NestJS, FastAPI, and Angular) seamlessly.
+
+1. **Ensure Docker and Docker Compose are installed** on your system.
+2. **Run the following command in the project root**:
 ```bash
 docker compose up -d --build
 ```
-- Web Application: **`http://localhost:4200`**
-- Core API & Swagger: **`http://localhost:3000/api/docs`**
-- Analytics Engine: **`http://localhost:8000/docs`**
+
+**Services will be available at:**
+- 🌐 Web Application (Angular): **`http://localhost:4200`**
+- ⚙️ Core API (NestJS): **`http://localhost:3000`**
+- 📘 Core API Swagger Docs: **`http://localhost:3000/api/docs`**
+- 📈 Analytics Engine (FastAPI): **`http://localhost:8000`**
+- 📊 Analytics API Docs: **`http://localhost:8000/docs`**
+
+To stop the stack, run:
+```bash
+docker compose down
+```
 
 For comprehensive cloud hosting (Render, Railway, Vercel, VPS) details, see the **[Production Deployment Guide](DEPLOYMENT.md)**.
 
