@@ -13,7 +13,79 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div id="app-init-loader">
+      <style>
+        #app-init-loader {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          background-color: #0b0f19;
+          background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px);
+          background-size: 24px 24px;
+          color: #f8fafc;
+          font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+          z-index: 999999;
+          user-select: none;
+        }
+        .init-logo {
+          width: 58px;
+          height: 58px;
+          border-radius: 16px;
+          background: linear-gradient(135deg, #2563eb, #1d4ed8);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-family: 'Outfit', sans-serif;
+          font-weight: 800;
+          font-size: 22px;
+          letter-spacing: -0.5px;
+          color: #ffffff;
+          box-shadow: 0 10px 25px -4px rgba(37, 99, 235, 0.5);
+          margin-bottom: 24px;
+          animation: init-pulse 2s infinite ease-in-out;
+        }
+        .init-spinner {
+          width: 28px;
+          height: 28px;
+          border: 2.5px solid rgba(255, 255, 255, 0.12);
+          border-top-color: #3b82f6;
+          border-radius: 50%;
+          animation: init-spin 0.8s linear infinite;
+          margin-bottom: 14px;
+        }
+        .init-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #e2e8f0;
+          letter-spacing: 0.2px;
+          margin-bottom: 4px;
+        }
+        .init-subtitle {
+          font-size: 12px;
+          font-weight: 400;
+          color: #64748b;
+        }
+        @keyframes init-spin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes init-pulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 10px 25px -4px rgba(37, 99, 235, 0.4); }
+          50% { transform: scale(1.05); box-shadow: 0 16px 32px -4px rgba(59, 130, 246, 0.6); }
+        }
+      </style>
+      <div class="init-logo">TTM</div>
+      <div class="init-spinner"></div>
+      <div class="init-title">Loading Workspace</div>
+      <div class="init-subtitle">Preparing secure environment...</div>
+    </div>
+  </app-root>
 </body>
 </html>
 

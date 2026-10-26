@@ -11,7 +11,8 @@ import {
   take, 
   switchMap, 
   map, 
-  of 
+  of,
+  timeout
 } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { User } from '../models/auth.model';
@@ -21,6 +22,7 @@ import { User } from '../models/auth.model';
 })
 export class AuthService {
   private readonly API_URL = `${environment.apiUrl}/auth`;
+  private readonly SESSION_KEY = 'ttm_active_session';
 
   // Tokens stored strictly IN-MEMORY via Angular Signals
   readonly currentUser = signal<User | null>(null);
@@ -38,6 +40,9 @@ export class AuthService {
       tap((res) => {
         if (res.accessToken) {
           this.accessToken.set(res.accessToken);
+          try {
+            localStorage.setItem(this.SESSION_KEY, 'true');
+          } catch (_) {}
           const user = res.user;
           if (user && typeof user.role === 'string') {
             user.role = { id: '', name: user.role };
@@ -97,22 +102,50 @@ export class AuthService {
   }
 
   /**
-   * Called once during app initialization (APP_INITIALIZER) to restore session via HttpOnly cookie
+   * Called once during app initialization (APP_INITIALIZER) to restore session via HttpOnly cookie.
+   * Optimized with a session flag check and strict timeout so cold cloud servers (Render free tier)
+   * never block the app from bootstrapping and rendering the UI immediately.
    */
   initSession(): Observable<boolean> {
+    const hasPreviousSession = typeof window !== 'undefined' && localStorage.getItem(this.SESSION_KEY) === 'true';
+    if (!hasPreviousSession) {
+      return of(false);
+    }
+
     return this.refreshToken().pipe(
-      switchMap(() => this.fetchProfile()),
+      timeout({
+        first: 3500,
+        with: () => throwError(() => new Error('Session restoration timeout'))
+      }),
+      switchMap(() => this.fetchProfile().pipe(
+        timeout({
+          first: 3500,
+          with: () => throwError(() => new Error('Profile fetch timeout'))
+        })
+      )),
       map(() => true),
       catchError(() => {
-        // If refresh fails (no cookie/session expired), clear state cleanly without throwing
-        this.accessToken.set(null);
-        this.currentUser.set(null);
+        // If refresh fails (no cookie, session expired, or cold start timeout), clear state cleanly without hanging bootstrap
+        this.clearSession(false);
         return of(false);
       })
     );
   }
 
+  /**
+   * Silent, non-blocking background ping to wake up free-tier cloud instances (Render)
+   * while the user is filling in their login credentials.
+   */
+  warmupBackend(): void {
+    this.http.get(`${this.API_URL}/me`, { withCredentials: true }).pipe(
+      catchError(() => of(null))
+    ).subscribe();
+  }
+
   private clearSession(navigate: boolean = true): void {
+    try {
+      localStorage.removeItem(this.SESSION_KEY);
+    } catch (_) {}
     this.accessToken.set(null);
     this.currentUser.set(null);
     if (navigate) {

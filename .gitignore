@@ -25,6 +25,34 @@ __pycache__/
 *.env
 !.env.example
 *.local
+*CREDENTIALS*
+*credentials*
+*SECRET*
+*secret*
+*.pem
+*.key
+*.cert
+*.pfx
+
+# Local Test Scripts & Testing Utilities
+*.ps1
+test_*.sh
+test_*.bat
+test_*.js
+
+# Local Documentation, Prompts & Progress Logs
+Build_Prompt.txt
+*Prompt*.txt
+PROGRESS_LOG.txt
+PROJECT_STATE_SUMMARY.txt
+*_LOG.txt
+*_SUMMARY.txt
+scratch/
+
+# Local databases
+*.sqlite
+*.sqlite3
+*.db
 
 # IDE & OS files
 .vscode/
@@ -42,3 +70,4 @@ yarn-error.log*
 .windsurf/
 .system_generated/
 skills-lock.json
+
